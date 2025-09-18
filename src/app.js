@@ -6,6 +6,8 @@ const UserRoute = require("./routes/userRoute");
 const ItemRoute = require("./routes/itemRoute");
 const CategoryRoute = require("./routes/categoryRoute");
 const UnitOfMeasurementRoute = require("./routes/unitOfMeasurementRoute");
+const GarbageBankRoute = require("./routes/garbageBankRoute");
+const TransactionRoute = require("./routes/transactionRoute");
 const path = require("path")
 
 require("dotenv").config();
@@ -24,6 +26,8 @@ app.use(UserRoute);
 app.use(ItemRoute);
 app.use(CategoryRoute);
 app.use(UnitOfMeasurementRoute);
+app.use(GarbageBankRoute);
+app.use(TransactionRoute);
 
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {

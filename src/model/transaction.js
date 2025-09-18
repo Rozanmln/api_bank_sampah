@@ -31,20 +31,6 @@ const Transaction = db.define(
         notEmpty: true,
       },
     },
-    bank_sampah_name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
     phone_number: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -67,7 +53,7 @@ const Transaction = db.define(
       },
     },
     date_of_weighing: {
-      type: DataTypes.STRING,
+      type: DataTypes.DATE,
       allowNull: false,
       validate: {
         notEmpty: true,

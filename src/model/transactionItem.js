@@ -32,14 +32,14 @@ const TransactionItem = db.define(
       },
     },
     weight: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(10, 3),
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
     total_price: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(10, 3),
       allowNull: false,
       validate: {
         notEmpty: true,

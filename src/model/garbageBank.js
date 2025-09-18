@@ -15,6 +15,13 @@ const GarbageBank = db.define(
         notEmpty: true,
       },
     },
+    garbage_bank_name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     rw_name: {
       type: DataTypes.STRING,
       allowNull: false,

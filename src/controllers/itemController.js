@@ -3,7 +3,7 @@ const Joi = require("joi");
 
 const createItemSchema = Joi.object({
   item_name: Joi.string().required(),
-  price: Joi.number().required(),
+  price: Joi.number().integer().required(),
   category_id: Joi.number().integer().required(),
   unit_of_measurement_id: Joi.number().integer().required(),
 });
@@ -11,7 +11,7 @@ const createItemSchema = Joi.object({
 const updateItemSchema = Joi.object({
   item_id: Joi.number().integer().required(),
   item_name: Joi.string(),
-  price: Joi.number(),
+  price: Joi.number().integer(),
   category_id: Joi.number().integer(),
   unit_of_measurement_id: Joi.number().integer(),
 });
