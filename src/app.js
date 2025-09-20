@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const dbGenerate = require("./config/dbGenerator");
+// const dbGenerate = require("./config/dbGenerator");
 const UserRoute = require("./routes/userRoute");
 const ItemRoute = require("./routes/itemRoute");
 const CategoryRoute = require("./routes/categoryRoute");
@@ -18,8 +18,6 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
-
-// dbGenerate()
 
 // routes
 app.use(UserRoute);
