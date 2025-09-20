@@ -59,6 +59,13 @@ const Transaction = db.define(
         notEmpty: true,
       },
     },
+    total_price: {
+      type: DataTypes.DECIMAL(10, 3),
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     deleted_at: {
       type: DataTypes.DATE,
       allowNull: true,

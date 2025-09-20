@@ -6,9 +6,10 @@ const router = express.Router();
 const transactionController = new TransactionController();
 
 router.get("/transaction/get", verifyToken, transactionController.getAllTransaction);
-// router.post("/transaction/get/by-category", verifyToken, transactionController.getItemByCategory);
+router.post("/transaction/get/detail/:id", verifyToken, transactionController.getTransactionDetail);
+router.post("/transaction/get/by-user", verifyToken, transactionController.getTransactionByUser);
 router.post("/transaction/create", verifyToken, transactionController.createTransaction);
-// router.put("/transaction/update", verifyToken, transactionController.editItem);
-// router.delete("/transaction/delete/:id", verifyToken, transactionController.deleteItem);
+router.put("/transaction/update", verifyToken, transactionController.editTransaction);
+router.delete("/transaction/delete/:id", verifyToken, transactionController.deleteTransaction);
 
 module.exports = router;

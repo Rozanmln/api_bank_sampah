@@ -4,8 +4,9 @@ const jwt = require("jsonwebtoken");
 const UserRole = require("../model/userRole");
 const Role = require("../model/role");
 const RolePrivilege = require("../model/rolePrivilege");
+const GarbageBank = require("../model/garbageBank");
 const Privilege = require("../model/privilege");
-const { Op } = require("sequelize");
+const { Op, where, Sequelize } = require("sequelize");
 const Joi = require("joi");
 
 require("dotenv").config();
@@ -79,13 +80,37 @@ class UserController {
   login = async (req, res) => {
     try {
       const { username, password } = req.body;
+      let responseBody = {}
 
       const foundUser = await User.findOne({
+        attributes: [
+          "user_id", 
+          "username", 
+          "password", 
+          "email", 
+          "address", 
+          "phone_number",
+          "garbage_bank_id",
+          [Sequelize.col("garbage_bank.garbage_bank_name"), "garbage_bank_name"],
+        ],
         where: {
           username: username,
         },
+        include: [
+          {
+            model: GarbageBank,
+            as: "garbage_bank",
+            attributes: [],
+          },
+        ],
+        raw: true
       });
       if (!foundUser) return res.status(400).json({ msg: "Wrong password or username" });
+
+      responseBody = {
+        ...responseBody,
+        ...foundUser
+      }
 
       const match = bcrypt.compareSync(password, foundUser.password);
       if (!match) return res.status(400).json({ msg: "Wrong password or username" });
@@ -94,7 +119,14 @@ class UserController {
         expiresIn: "1d",
       });
 
-      res.status(200).json({ msg: "Login Success", token });
+      delete responseBody.password;
+      
+      responseBody = {
+        ...responseBody,
+        token: token
+      }
+
+      res.status(200).json({ msg: "Login Success", responseBody });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
@@ -106,10 +138,25 @@ class UserController {
       let role_data = [];
       
       const user_data = await User.findOne({
-        attributes: ["user_id", "username", "email", "address", "phone_number"],
+        attributes: [
+          "user_id", 
+          "username", 
+          "email", 
+          "address", 
+          "phone_number",
+          "garbage_bank_id",
+          [Sequelize.col("garbage_bank.garbage_bank_name"), "garbage_bank_name"],
+        ],
         where: {
           user_id: req.user.id,
         },
+        include: [
+          {
+            model: GarbageBank,
+            as: "garbage_bank",
+            attributes: [],
+          },
+        ],
       });
 
       if (!user_data) {
@@ -190,7 +237,7 @@ class UserController {
         for (let i = 0; i < value.role_ids.length; i++) {
           await UserRole.create({
             role_id: value.role_ids[i],
-            user_id: user_id,
+            user_id: value.user_id,
           });
         }
       }

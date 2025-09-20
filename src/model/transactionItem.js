@@ -38,7 +38,14 @@ const TransactionItem = db.define(
         notEmpty: true,
       },
     },
-    total_price: {
+    price_per_qty: {
+      type: DataTypes.DECIMAL(10, 3),
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    amount: {
       type: DataTypes.DECIMAL(10, 3),
       allowNull: false,
       validate: {

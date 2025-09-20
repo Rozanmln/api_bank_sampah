@@ -13,23 +13,36 @@ const createTransactionSchema = Joi.object({
       Joi.object({
         item_id: Joi.number().integer().required(),
         weight: Joi.number().precision(3).required(),
-        total_price: Joi.number().precision(3).required(),
+        price_per_qty: Joi.number().precision(3).required(),
+        amount: Joi.number().precision(3).required(),
       })
     )
     .min(1)
     .required(),
 });
 
-const updateItemSchema = Joi.object({
-  item_id: Joi.number().integer().required(),
-  item_name: Joi.string(),
-  price: Joi.number(),
-  category_id: Joi.number().integer(),
-  unit_of_measurement_id: Joi.number().integer(),
+const updateTransactionSchema = Joi.object({
+  transaction_id: Joi.number().integer().required(),
+  user_id: Joi.number().integer(),
+  garbage_bank_id: Joi.number().integer(),
+  phone_number: Joi.string(),
+  customer: Joi.string(),
+  number_of_customer_weighing: Joi.number().integer(),
+  date_of_weighing: Joi.date(),
+  items: Joi.array()
+    .items(
+      Joi.object({
+        item_id: Joi.number().integer().required(),
+        weight: Joi.number().precision(3).required(),
+        price_per_qty: Joi.number().precision(3).required(),
+        amount: Joi.number().precision(3).required(),
+      })
+    )
+    .default([]),
 });
 
-const getItemByCategorySchema = Joi.object({
-  category_id: Joi.number().integer().required(),
+const getTransactionByUserSchema = Joi.object({
+  user_id: Joi.number().integer().required(),
 });
 
 class TransactionController {
@@ -47,20 +60,32 @@ class TransactionController {
     }
   };
 
-//   getItemByCategory = async (req, res) => {
-//     try {
-//       const { error, value } = getItemByCategorySchema.validate(req.body);
-//       if (error) {
-//         return res.status(400).json({ msg: error.details[0].message });
-//       }
+  getTransactionDetail = async (req, res) => {
+    try {
+      const { id } = req.params;
 
-//       const result = await this.transactionService.getItemByCategory(value);
+      const result = await this.transactionService.getTransactionDetail(id);
 
-//       res.status(200).json({ msg: "Get item by category success", result });
-//     } catch (error) {
-//       res.status(500).json({ msg: error.message });
-//     }
-//   };
+      res.status(200).json({ msg: "Get transaction detail success", result });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  };
+
+  getTransactionByUser = async (req, res) => {
+    try {
+      const { error, value } = getTransactionByUserSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ msg: error.details[0].message });
+      }
+
+      const result = await this.transactionService.getTransactionByUser(value);
+
+      res.status(200).json({ msg: "Get transaction by user success", result });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  };
 
   createTransaction = async (req, res) => {
     try {
@@ -77,32 +102,32 @@ class TransactionController {
     }
   };
 
-//   editItem = async (req, res) => {
-//     try {
-//       const { error, value } = updateItemSchema.validate(req.body);
-//       if (error) {
-//         return res.status(400).json({ msg: error.details[0].message });
-//       }
+  editTransaction = async (req, res) => {
+    try {
+      const { error, value } = updateTransactionSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ msg: error.details[0].message });
+      }
 
-//       const update_item = await this.transactionService.updateItem(value);
+      const update_transaction = await this.transactionService.updateTransaction(value);
 
-//       res.status(200).json({ msg: "Update Item Success", update_item });
-//     } catch (error) {
-//       res.status(500).json({ msg: error.message });
-//     }
-//   };
+      res.status(200).json({ msg: "Update Transaction Success", update_transaction });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  };
 
-//   deleteItem = async (req, res) => {
-//     try {
-//       const { id } = req.params;
+  deleteTransaction = async (req, res) => {
+    try {
+      const { id } = req.params;
 
-//       const result = await this.transactionService.deleteItem(id);
+      const result = await this.transactionService.deleteTransaction(id);
 
-//       res.status(200).json({ msg: "Delete Item Success", result });
-//     } catch (error) {
-//       res.status(500).json({ msg: error.message });
-//     }
-//   };
+      res.status(200).json({ msg: "Delete Transaction Success", result });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  };
 
 }
 
