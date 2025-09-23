@@ -72,6 +72,30 @@ class TransactionController {
     }
   };
 
+  transactionExportExcel = async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const [result, dateFormatted] = await this.transactionService.transactionExportExcel(id);
+
+      const dateFile = dateFormatted.trim().replace(/ /g, "_");
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=Transaksi_${dateFile}.xlsx`
+      );
+
+      res.end(result);
+
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  };
+
   getTransactionByUser = async (req, res) => {
     try {
       const { error, value } = getTransactionByUserSchema.validate(req.body);
