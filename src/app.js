@@ -27,7 +27,8 @@ app.use(UnitOfMeasurementRoute);
 app.use(GarbageBankRoute);
 app.use(TransactionRoute);
 
+const HOST = process.env.HOST || "127.0.0.1";
 const PORT = process.env.PORT || 8081;
-app.listen(PORT, () => {
-  console.log("Server listening on " + PORT);
+app.listen(PORT, HOST, () => {
+  console.log(`Server listening on http://${HOST}:${PORT}`);
 });
