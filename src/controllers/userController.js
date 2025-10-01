@@ -81,6 +81,7 @@ class UserController {
     try {
       const { username, password } = req.body;
       let responseBody = {}
+      let role_data = [];
 
       const foundUser = await User.findOne({
         attributes: [
@@ -120,9 +121,30 @@ class UserController {
       });
 
       delete responseBody.password;
+
+      const user_role_data = await UserRole.findAll({
+        attributes: ["user_role_id", "user_id", "role_id"],
+        where: {
+          user_id: foundUser.user_id,
+        },
+      });
+
+      for (let i = 0; i < user_role_data.length; i++) {
+        const role = await Role.findOne({
+          attributes: ["role_id", "role_name"],
+          where: {
+            role_id: user_role_data[i].role_id,
+          },
+        });
+
+        if (role) {
+          role_data.push(role.dataValues)
+        }
+      }
       
       responseBody = {
         ...responseBody,
+        roles: role_data,
         token: token
       }
 
