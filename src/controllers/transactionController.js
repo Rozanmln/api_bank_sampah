@@ -52,7 +52,7 @@ class TransactionController {
 
   getAllTransaction = async (req, res) => {
     try {
-      const result = await this.transactionService.getTransaction();
+      const result = await this.transactionService.getTransaction(req.user.id, req.query.garbage_bank_id);
 
       res.status(200).json({ msg: "Get all transaction success", result });
     } catch (error) {

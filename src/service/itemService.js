@@ -145,11 +145,6 @@ class ItemService {
     return rows[0]
   }
 
-  // async downloadPDF(id, obsId) {
-  //   const dataPDF = await this.getSingleResultData(id, obsId);
-
-  //   return await downloadPDFReport(dataPDF);
-  // }
 }
 
 module.exports = ItemService;

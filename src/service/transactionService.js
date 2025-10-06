@@ -3,6 +3,8 @@ const Transaction = require("../model/transaction");
 const TransactionItem = require("../model/transactionItem");
 const Item = require("../model/item");
 const User = require("../model/user");
+const UserRole = require("../model/userRole");
+const Role = require("../model/role");
 const GarbageBank = require("../model/garbageBank");
 const Category = require("../model/category");
 const UnitOfMeasurement = require("../model/unitOfMeasurement");
@@ -11,8 +13,60 @@ const ExcelJS = require("exceljs");
 
 class TransactionService {
 
-  async getTransaction() {
+  async getTransaction(user_id, param_garbage_bank_id) {
     let responseData = [];
+
+    // get role
+    let role_data = [];
+
+    const user_data = await User.findOne({
+      attributes: [
+        "user_id", 
+        "username", 
+        "email", 
+        "address", 
+        "phone_number",
+        "garbage_bank_id",
+      ],
+      where: {
+        user_id: user_id,
+      },
+    });
+
+    if (!user_data) {
+      return res.status(500).json({ msg: "User not found" });
+    }
+
+    const user_role_data = await UserRole.findAll({
+      attributes: ["user_role_id", "user_id", "role_id"],
+      where: {
+        user_id: user_data.user_id,
+      },
+    });
+
+    for (let i = 0; i < user_role_data.length; i++) {
+      const role = await Role.findOne({
+        attributes: ["role_id", "role_name"],
+        where: {
+          role_id: user_role_data[i].role_id,
+        },
+      });
+
+      if (role) {
+        role_data.push(role.dataValues.role_id)
+      }
+    }
+    // end get role
+
+    const where_condition = {
+      deleted_at: null,
+      ...( !role_data.includes(1) && { 
+        garbage_bank_id: user_data.dataValues.garbage_bank_id 
+      }),
+      ...( role_data.includes(1) && param_garbage_bank_id != 0 && { 
+        garbage_bank_id: param_garbage_bank_id 
+      }),
+    };
 
     const transaction = await Transaction.findAll({
       attributes: [
@@ -23,13 +77,12 @@ class TransactionService {
         [Sequelize.col("garbage_bank.garbage_bank_name"), "garbage_bank_name"],
         "phone_number", 
         "customer",
-        "number_of_customer_weighing",
+        "number_of_customer_weighing", 
         "date_of_weighing",
         "total_price",
+        "total_weight",
       ],
-      where: {
-        deleted_at: null,
-      },
+      where: where_condition,
       include: [
         {
           model: User,
@@ -50,6 +103,7 @@ class TransactionService {
     const parsedTransaction = transaction.map(t => ({
       ...t,
       total_price: t.total_price === null ? null : parseFloat(t.total_price),
+      total_weight: t.total_weight === null ? null : parseFloat(t.total_weight),
     }));
 
     for (let i = 0; i < parsedTransaction.length; i++) {
@@ -142,6 +196,7 @@ class TransactionService {
         "number_of_customer_weighing",
         "date_of_weighing",
         "total_price",
+        "total_weight",
       ],
       where: {
         transaction_id: id,
@@ -167,6 +222,7 @@ class TransactionService {
     const parsedTransaction = transaction.map(t => ({
       ...t,
       total_price: t.total_price === null ? null : parseFloat(t.total_price),
+      total_weight: t.total_weight === null ? null : parseFloat(t.total_weight),
     }));
 
     for (let i = 0; i < parsedTransaction.length; i++) {
@@ -244,6 +300,7 @@ class TransactionService {
     return responseData
   
   }
+
   async transactionExportExcel(id) {
     let source_data = [];
 
@@ -608,9 +665,31 @@ class TransactionService {
   async createTransaction(value) {
     const items = value.items;
     let total_price_data = 0;
+    let total_weight_kg = 0;
 
     if (items.length > 0) {
       total_price_data = items.reduce((sum, item) => sum + item.amount, 0);
+
+      for (let i = 0; i < items.length; i++) {
+        const item_data = await Item.findOne({
+          attributes: [
+            "item_id", 
+            "item_name", 
+            "price", 
+            "category_id", 
+            "unit_of_measurement_id",
+          ],
+          where: {
+            deleted_at: null,
+            item_id: items[i].item_id
+          },
+          raw: true,
+        });
+
+        if (item_data && item_data.unit_of_measurement_id === 1) {
+          total_weight_kg += items[i].weight
+        }
+      }
     }
 
     const transaction = await Transaction.create({
@@ -621,6 +700,7 @@ class TransactionService {
       number_of_customer_weighing: value.number_of_customer_weighing,
       date_of_weighing: value.date_of_weighing,
       total_price: total_price_data,
+      total_weight: total_weight_kg,
     });
 
     if (items.length > 0) {
@@ -641,9 +721,31 @@ class TransactionService {
   async updateTransaction(value) {
     const items = value.items;
     let total_price_data = 0;
+    let total_weight_kg = 0;
 
     if (items.length > 0) {
       total_price_data = items.reduce((sum, item) => sum + item.amount, 0);
+      
+      for (let i = 0; i < items.length; i++) {
+        const item_data = await Item.findOne({
+          attributes: [
+            "item_id", 
+            "item_name", 
+            "price", 
+            "category_id", 
+            "unit_of_measurement_id",
+          ],
+          where: {
+            deleted_at: null,
+            item_id: items[i].item_id
+          },
+          raw: true,
+        });
+
+        if (item_data && item_data.unit_of_measurement_id === 1) {
+          total_weight_kg += items[i].weight
+        }
+      }
     }
 
     const foundTransaction = await Transaction.findOne({
@@ -665,6 +767,7 @@ class TransactionService {
         number_of_customer_weighing: value.number_of_customer_weighing,
         date_of_weighing: value.date_of_weighing,
         total_price: total_price_data,
+        total_weight: total_weight_kg,
       },
       {
         where: { transaction_id: value.transaction_id },
